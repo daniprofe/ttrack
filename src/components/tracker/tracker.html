@@ -1,5 +1,7 @@
 <ion-toolbar>
-    <button ion-button icon-only round>
+    <button ion-button icon-only round (click)="startButtonClicked()">
         <ion-icon name="play"></ion-icon>
     </button>
+    <div>{{startedAtString}}</div>
+    <div>{{ellapsedString}}</div>
 </ion-toolbar>
