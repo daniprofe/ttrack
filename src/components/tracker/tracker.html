@@ -1,7 +1,39 @@
 <ion-toolbar>
-    <button ion-button icon-only round (click)="startButtonClicked()">
+    <button *ngIf="!nowTracking" ion-button icon-only round (click)="startButtonClicked()">
         <ion-icon name="play"></ion-icon>
     </button>
-    <div>{{startedAtString}}</div>
-    <div>{{ellapsedString}}</div>
+
+    <button *ngIf="nowTracking" ion-button icon-only round (click)="pauseButtonClicked()">
+        <ion-icon name="pause"></ion-icon>
+    </button>
+
+    <button *ngIf="nowTracking" ion-button icon-only round (click)="stopButtonClicked()">
+        <ion-icon name="square"></ion-icon>
+    </button>
+
+    <ion-list *ngIf="this.segments.length > 0">
+
+        <button ion-item *ngFor="let actualSegment of this.segments">
+            <ion-grid>
+                <ion-row>
+                    <ion-col col-md-2><strong>Inicio:</strong>&nbsp;{{showDateTime(actualSegment.startedAt, true)}}</ion-col>
+                    <ion-col col-md-2 *ngIf="actualSegment.finishedAt"><strong>Fin:</strong>{{showFinishedAt(actualSegment)}}</ion-col>
+                    <ion-col col-md-2 *ngIf="actualSegment.finishedAt === null"></ion-col>
+                    <ion-col col-md-2 *ngIf="actualSegment.finishedAt === null">{{showEllapsed(actualSegment.startedAt)}}</ion-col>
+                    <ion-col col-md-2 *ngIf="actualSegment.finishedAt">{{showEllapsed(actualSegment.startedAt, actualSegment.finishedAt)}}</ion-col>
+                </ion-row>
+            </ion-grid>
+        </button>
+
+        <ion-item *ngIf="this.segments.length > 1">
+            <ion-grid>
+                <ion-row>
+                    <ion-col col-md-4></ion-col>
+                    <ion-col col-md-2>Total: {{showEllapsedTotal()}}</ion-col>
+                </ion-row>
+            </ion-grid>
+        </ion-item>
+
+    </ion-list>
+
 </ion-toolbar>
