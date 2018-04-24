@@ -1,4 +1,29 @@
-<ion-list>
+<ion-segment [(ngModel)]="filter">
+    <ion-segment-button value="from-tracker">
+        Tracker
+    </ion-segment-button>
+    <ion-segment-button value="">
+        Tareas
+    </ion-segment-button>
+</ion-segment>
+
+<ion-list *ngIf="filter == 'from-tracker'; else notFiltered">
+    <ion-item>From tracker</ion-item>
+    <button ion-item *ngFor="let actualTask of tp.tasksFromTracker">
+        <ion-grid>
+            <ion-row>
+                <ion-col>{{mu.momentToString(actualTask.segments[0].startedAt)}}</ion-col>
+                <ion-col>{{showFinishedAt(actualTask.segments[0])}}</ion-col>
+                <ion-col>{{mu.durationToHours(actualTask.segments[0].duration)}}</ion-col>
+            </ion-row>
+        </ion-grid>    
+    </button>
+</ion-list>
+
+<ng-template #notFiltered>
+
+<ion-list *ngIf="!fromTrackerFilter">
+    <ion-item>Tareas</ion-item>
     <button ion-item *ngFor="let actualTask of tp.tasks">
         {{ actualTask.description }}
         <ion-list *ngIf="actualTask.segments.length > 0">
@@ -12,3 +37,5 @@
         </ion-list>
     </button>
 </ion-list>
+
+</ng-template>

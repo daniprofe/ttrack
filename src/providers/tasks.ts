@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { Task } from '../models/task';
@@ -7,15 +6,17 @@ import { trackerSegment } from '../models/task';
 @Injectable()
 export class TasksProvider {
 
-    private tasks: Array<Task> = [];
+    public tasksFromTracker: Array<Task> = [];
+
+    public tasks: Array<Task> = [];
 
     constructor() {
     }
 
-    newTaskFromSegment(segment: trackerSegment) {
-        let newTask = new Task('Intervalo sin tarea');
+    newTaskFromTracker(segment: trackerSegment) {
+        let newTask = new Task('Sin seguimiento');
         newTask.segments.push(segment);
-        this.tasks.push(newTask);
+        this.tasksFromTracker.push(newTask);
     }
 
 }
