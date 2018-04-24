@@ -1,3 +1,14 @@
-<!-- <ion-content padding> -->
-Jjjjjj
-<!-- </ion-content> -->
+<ion-list>
+    <button ion-item *ngFor="let actualTask of tp.tasks">
+        {{ actualTask.description }}
+        <ion-list *ngIf="actualTask.segments.length > 0">
+            <ion-item *ngFor="let actualSegment of actualTask.segments">
+                <ul>
+                    <li><strong>Inicio:</strong> {{mu.momentToString(actualSegment.startedAt)}}</li>
+                    <li><strong>Fin:</strong> {{showFinishedAt(actualSegment)}}</li>
+                    <li><strong>Duración:</strong> {{mu.durationToHours(actualSegment.duration)}}</li>
+                </ul>
+            </ion-item>
+        </ion-list>
+    </button>
+</ion-list>

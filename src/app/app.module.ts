@@ -7,6 +7,9 @@ import { ComponentsModule } from '../components/components.module';
 import { TTracker } from './app.component';
 
 import { TaskListPage } from '../pages/task-list/task-list';
+import { MomentUtilsProvider } from '../providers/moment-utils';
+import { TasksProvider } from '../providers/tasks';
+// import { Task } from '../models/task';
 
 @NgModule({
     declarations: [
@@ -31,7 +34,10 @@ import { TaskListPage } from '../pages/task-list/task-list';
         {
             provide: ErrorHandler,
             useClass: IonicErrorHandler
-        }
+        },
+    MomentUtilsProvider,
+    TasksProvider /*,
+    Task */
     ]
 })
 export class AppModule {}

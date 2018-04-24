@@ -1,25 +1,39 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
 
-/**
- * Generated class for the TaskListPage page.
- *
- * See https://ionicframework.com/docs/components/#navigation for more info on
- * Ionic pages and navigation.
- */
+import { MomentUtilsProvider } from '../../providers/moment-utils';
+import { TasksProvider } from '../../providers/tasks';
+import { trackerSegment } from '../../models/task';
 
 @IonicPage()
 @Component({
-  selector: 'page-task-list',
-  templateUrl: 'task-list.html',
+    selector: 'page-task-list',
+    templateUrl: 'task-list.html',
 })
 export class TaskListPage {
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
-  }
+    constructor(
+        public navCtrl: NavController,
+        public navParams: NavParams,
+        private mu: MomentUtilsProvider,
+        private tp: TasksProvider
+    ) {
+    }
 
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad TaskListPage');
-  }
+    ionViewDidEnter() {
+
+    }
+
+    showFinishedAt(segment: trackerSegment) {
+
+        let showDate = true;
+
+        if (segment.startedAt.format('YYYYMMDD') === segment.finishedAt.format('YYYYMMDD')) {
+            showDate = false;
+        }
+
+        return this.mu.momentToString(segment.finishedAt, showDate);
+
+    }
 
 }
