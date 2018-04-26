@@ -1,25 +1,23 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
 
+import { Task } from '../../models/task';
 import { trackerSegment } from '../../models/task';
 import { MomentUtilsProvider } from '../../providers/moment-utils';
 import { TasksProvider } from '../../providers/tasks';
 
-/**
- * Generated class for the TaskListPage page.
- *
- * See https://ionicframework.com/docs/components/#navigation for more info on
- * Ionic pages and navigation.
- */
-
 @IonicPage()
 @Component({
-  selector: 'page-task-list',
-  templateUrl: 'task-list.html',
+    selector: 'page-task-list',
+    templateUrl: 'task-list.html',
 })
 export class TaskListPage {
 
-    private filter: string = '';
+    private tab: string = 'tracker';
+    private searchingTask: boolean = false;
+    private descriptionFilter: string = '';
+    private showTaskSave: boolean = false;
+    private savingTrackerSegment: trackerSegment|null = null;
 
     constructor(
         public navCtrl: NavController,
@@ -29,7 +27,21 @@ export class TaskListPage {
     }
 
     ionViewDidLoad() {
-    console.log('ionViewDidLoad TaskListPage');
+        console.log('ionViewDidLoad TaskListPage');
+    }
+
+    filterByDescription(task: Task): boolean {
+
+        let descriptionFilter = this.descriptionFilter.trim().toLowerCase();
+
+        if (descriptionFilter == '') {
+            return true;
+        } else if (task.description.toLowerCase().indexOf(descriptionFilter) > -1) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
     showFinishedAt(segment: trackerSegment) {
@@ -44,4 +56,24 @@ export class TaskListPage {
 
     }
 
+    trackerTaskClicked(clickedSegment: trackerSegment) {
+
+        // Go to tasks tab and show search bar
+        this.tab = 'tasks';
+        this.searchingTask = true;
+        this.savingTrackerSegment = clickedSegment;
+
+    }
+
+    searchTask(event) {
+        if (event.target.value) {
+            this.descriptionFilter = event.target.value;
+        }
+    }
+
+    saveNewTaskButtonClicked() {
+        let newTask = new Task(this.descriptionFilter.trim());
+        newTask.segments.push(this.savingTrackerSegment);
+        this.tp.tasks.push(newTask);
+    }
 }

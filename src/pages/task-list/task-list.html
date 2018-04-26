@@ -1,41 +1,61 @@
-<ion-segment [(ngModel)]="filter">
-    <ion-segment-button value="from-tracker">
+<ion-segment [(ngModel)]="tab">
+    <ion-segment-button value="tracker">
         Tracker
     </ion-segment-button>
-    <ion-segment-button value="">
+    <ion-segment-button value="tasks">
         Tareas
     </ion-segment-button>
 </ion-segment>
 
-<ion-list *ngIf="filter == 'from-tracker'; else notFiltered">
-    <ion-item>From tracker</ion-item>
-    <button ion-item *ngFor="let actualTask of tp.tasksFromTracker">
+<ion-list *ngIf="tab == 'tracker'; else showTasks">
+    <ion-item *ngIf="tp.tracker.length == 0">
+        <p>Pulsa el botón <ion-icon name="play"></ion-icon> para comenzar el seguimiento<br>
+           Pulsa el botón <ion-icon name="square"></ion-icon> para terminarlo</p>
+    </ion-item>
+    <button ion-item *ngFor="let actualSegment of tp.tracker" (click)="trackerTaskClicked(actualSegment)">
         <ion-grid>
             <ion-row>
-                <ion-col>{{mu.momentToString(actualTask.segments[0].startedAt)}}</ion-col>
-                <ion-col>{{showFinishedAt(actualTask.segments[0])}}</ion-col>
-                <ion-col>{{mu.durationToHours(actualTask.segments[0].duration)}}</ion-col>
+                <ion-col>{{mu.momentToString(actualSegment.startedAt)}}</ion-col>
+                <ion-col>{{showFinishedAt(actualSegment)}}</ion-col>
+                <ion-col>{{mu.durationToHours(actualSegment.duration)}}</ion-col>
             </ion-row>
-        </ion-grid>    
+        </ion-grid>
     </button>
 </ion-list>
 
-<ng-template #notFiltered>
+<ng-template #showTasks>
 
-<ion-list *ngIf="!fromTrackerFilter">
-    <ion-item>Tareas</ion-item>
-    <button ion-item *ngFor="let actualTask of tp.tasks">
-        {{ actualTask.description }}
-        <ion-list *ngIf="actualTask.segments.length > 0">
-            <ion-item *ngFor="let actualSegment of actualTask.segments">
-                <ul>
-                    <li><strong>Inicio:</strong> {{mu.momentToString(actualSegment.startedAt)}}</li>
-                    <li><strong>Fin:</strong> {{showFinishedAt(actualSegment)}}</li>
-                    <li><strong>Duración:</strong> {{mu.durationToHours(actualSegment.duration)}}</li>
-                </ul>
-            </ion-item>
-        </ion-list>
-    </button>
-</ion-list>
+    <ion-toolbar *ngIf="searchingTask">
+
+            <ion-searchbar placeholder="Escribe el nombre de la tarea" (ionInput)="searchTask($event)">
+            </ion-searchbar>
+
+            <ion-buttons end (click)="saveNewTaskButtonClicked()">
+                <button ion-button icon-only>
+                    <ion-icon name="checkmark-circle"></ion-icon>
+                </button>
+            </ion-buttons>
+
+    </ion-toolbar>
+
+    <ion-list>
+        <ion-item *ngIf="tp.tasks.length == 0">
+            Aún no has registrado ninguna tarea
+        </ion-item>
+        <ng-container *ngFor="let actualTask of tp.tasks">
+            <button ion-item *ngIf="filterByDescription(actualTask)">
+                {{ actualTask.description }}
+                <ion-list *ngIf="actualTask.segments.length > 0">
+                    <ion-item *ngFor="let actualSegment of actualTask.segments">
+                        <ul>
+                            <li><strong>Inicio:</strong> {{mu.momentToString(actualSegment.startedAt)}}</li>
+                            <li><strong>Fin:</strong> {{showFinishedAt(actualSegment)}}</li>
+                            <li><strong>Duración:</strong> {{mu.durationToHours(actualSegment.duration)}}</li>
+                        </ul>
+                    </ion-item>
+                </ion-list>
+            </button>
+        </ng-container>
+    </ion-list>
 
 </ng-template>

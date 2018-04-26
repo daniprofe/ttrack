@@ -16,10 +16,8 @@ export class TTracker {
     }
 
     newSegment(segment) {
-        console.error("Ay!!");
-        console.error(segment);
 
-        this.tasks.newTaskFromTracker(segment);
+        this.tasks.tracker.push(segment);
 
     }
 }
