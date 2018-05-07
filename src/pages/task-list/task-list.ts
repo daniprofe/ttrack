@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { Events, IonicPage, NavController, NavParams } from 'ionic-angular';
 
 import { Task } from '../../models/task';
-import { trackerSegment } from '../../models/task';
+import { TrackerInterval } from '../../models/tracker-interval';
 import { MomentUtilsProvider } from '../../providers/moment-utils';
-import { TasksProvider } from '../../providers/tasks';
+import { PdbProvider } from '../../providers/pdb';
 
 @IonicPage()
 @Component({
@@ -15,19 +15,55 @@ export class TaskListPage {
 
     private tab: string = 'tracker';
     private searchingTask: boolean = false;
+    private savingTrackerInterval: boolean = false;
     private descriptionFilter: string = '';
     private showTaskSave: boolean = false;
-    private savingTrackerSegment: trackerSegment|null = null;
+    private selectedTrackerInterval: TrackerInterval|null = null;
+
+    private tracker: Array<TrackerInterval> = [];
+    private tasks: Array<Task> = [];
 
     constructor(
         public navCtrl: NavController,
         public navParams: NavParams,
-        private tp: TasksProvider,
-        private mu: MomentUtilsProvider) {
+        private pdb: PdbProvider,
+        private mu: MomentUtilsProvider,
+        private events: Events) {
     }
 
     ionViewDidLoad() {
         console.log('ionViewDidLoad TaskListPage');
+        this.events.subscribe('tracker:new-interval', newInterval => {
+            this.tracker.push(newInterval);
+        });
+        this.pdb.fetchAllTrackerIntervals().then(result => {
+            this.tracker = result;
+        });
+        this.pdb.fetchAllTasks().then(result => {
+            this.tasks = result;
+            console.log(this.tasks);
+        });
+    }
+
+    showFinishedAt(trackerInterval: TrackerInterval) {
+
+        let showDate = true;
+
+        if (trackerInterval.startedAt.format('YYYYMMDD') === trackerInterval.finishedAt.format('YYYYMMDD')) {
+            showDate = false;
+        }
+
+        return this.mu.momentToString(trackerInterval.finishedAt, showDate);
+
+    }
+
+    trackerTaskClicked(clickedInterval: TrackerInterval) {
+
+        // Go to tasks tab and show search bar
+        this.selectedTrackerInterval = clickedInterval;
+        this.tab = 'tasks';
+        this.savingTrackerInterval = true;
+        this.searchingTask = true;
     }
 
     filterByDescription(task: Task): boolean {
@@ -44,27 +80,6 @@ export class TaskListPage {
 
     }
 
-    showFinishedAt(segment: trackerSegment) {
-
-        let showDate = true;
-
-        if (segment.startedAt.format('YYYYMMDD') === segment.finishedAt.format('YYYYMMDD')) {
-            showDate = false;
-        }
-
-        return this.mu.momentToString(segment.finishedAt, showDate);
-
-    }
-
-    trackerTaskClicked(clickedSegment: trackerSegment) {
-
-        // Go to tasks tab and show search bar
-        this.tab = 'tasks';
-        this.searchingTask = true;
-        this.savingTrackerSegment = clickedSegment;
-
-    }
-
     searchTask(event) {
         if (event.target.value) {
             this.descriptionFilter = event.target.value;
@@ -72,8 +87,15 @@ export class TaskListPage {
     }
 
     saveNewTaskButtonClicked() {
-        let newTask = new Task(this.descriptionFilter.trim());
-        newTask.segments.push(this.savingTrackerSegment);
-        this.tp.tasks.push(newTask);
+
+        let newTask = new Task(this.pdb.generateId('task'), this.descriptionFilter.trim());
+        newTask.intervals.push(this.selectedTrackerInterval);
+
+        this.pdb.storeTask(newTask).then(task => {
+            this.tasks.push(task);
+            this.savingTrackerInterval = false;
+            this.searchingTask = false;
+        });
     }
+
 }

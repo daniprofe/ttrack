@@ -1,18 +1,14 @@
-import moment from 'moment';
-
-export interface trackerSegment {
-    startedAt: moment.Moment|null,
-    finishedAt: moment.Moment|null,
-    duration: moment.Duration|null
-}
+import { TrackerInterval } from './tracker-interval';
 
 export class Task {
 
-    public segments: Array<trackerSegment> = [];
+    public intervals: Array<TrackerInterval> = [];
+    
+    public _rev: string;
 
-    constructor(private description: string = 'Nueva tarea') {
+    constructor(public _id: string, public description: string = 'Nueva tarea') {
 
-            this.description = this.description.trim();
+        this.description = this.description.trim();
 
     }
 

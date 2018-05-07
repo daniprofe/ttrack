@@ -8,7 +8,7 @@ import { TTracker } from './app.component';
 
 import { TaskListPage } from '../pages/task-list/task-list';
 import { MomentUtilsProvider } from '../providers/moment-utils';
-import { TasksProvider } from '../providers/tasks';
+import { PdbProvider } from '../providers/pdb';
 // import { Task } from '../models/task';
 
 @NgModule({
@@ -36,7 +36,7 @@ import { TasksProvider } from '../providers/tasks';
             useClass: IonicErrorHandler
         },
     MomentUtilsProvider,
-    TasksProvider /*,
+    PdbProvider /*,
     Task */
     ]
 })

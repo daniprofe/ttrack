@@ -1,15 +1,12 @@
 import { Component, Output, EventEmitter } from '@angular/core';
+import { Events } from 'ionic-angular';
 
 import { Observable } from 'rxjs/Rx';
 import moment from 'moment';
 
+import { PdbProvider } from '../../providers/pdb';
+import { TrackerInterval } from '../../models/tracker-interval';
 import { MomentUtilsProvider } from '../../providers/moment-utils';
-
-interface trackerSegment {
-    startedAt: moment.Moment|null,
-    finishedAt: moment.Moment|null,
-    duration: moment.Duration|null
-}
 
 @Component({
     selector: 'ttracker-tracker',
@@ -18,21 +15,22 @@ interface trackerSegment {
 
 export class TrackerComponent {
 
-    @Output('new-segment') newSegment = new EventEmitter();
+    // @Output('new-interval') newInterval = new EventEmitter();
 
     private locale: string = 'es';
     private timer = null;
     private now: moment.Moment|null = null;
-    private tracking: trackerSegment = {
-        startedAt: null,
-        finishedAt: null,
-        duration: null
-    };
+    private tracking: TrackerInterval|null = null;
 
-    constructor(private mu: MomentUtilsProvider) {
+    constructor(
+        private mu: MomentUtilsProvider,
+        private pdb: PdbProvider,
+        private events: Events) {
+
         moment.locale(this.locale);
         this.timer = Observable.timer(0, 1000);
         this.timer.subscribe(t => { this.updateTimer(t); });
+
     }
 
     updateTimer(t) {
@@ -40,18 +38,30 @@ export class TrackerComponent {
     }
 
     startButtonClicked(): void {
-        this.tracking.startedAt = this.now;
+        this.tracking = new TrackerInterval(this.now, this.pdb.generateId('tracker'));
+        this.pdb.storeTrackerInterval(this.tracking).then(stored => {
+            this.tracking = stored;
+        }).catch(stored => {
+            this.tracking = stored;
+        });
     }
 
     stopButtonClicked(): void {
+
         this.tracking.finishedAt = this.now;
         this.tracking.duration = moment.duration(this.tracking.finishedAt.diff(this.tracking.startedAt));
-        this.newSegment.emit(this.tracking);
-        this.tracking = {
-            startedAt: null,
-            finishedAt: null,
-            duration: null
-        };
+
+        this.pdb.storeTrackerInterval(this.tracking).then(stored => {
+            /* If finishedAt exists... emit the 'closed' tracker interval and
+             * prepare to start tracking a new one
+             */
+            this.tracking = stored;
+            this.events.publish('tracker:new-interval', this.tracking);
+            // this.newInterval.emit(this.tracking);
+            this.tracking = null;
+        }).catch(stored => {
+            this.tracking = stored;
+        });
     }
 
     showStartedAt(): string {

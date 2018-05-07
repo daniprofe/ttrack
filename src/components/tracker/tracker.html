@@ -1,16 +1,16 @@
 <ion-toolbar>
 
     <ion-buttons start>
-        <button *ngIf="!tracking.startedAt" ion-button icon-only round (click)="startButtonClicked()">
+        <button *ngIf="!tracking" ion-button icon-only round (click)="startButtonClicked()">
             <ion-icon name="play"></ion-icon>
         </button>
 
-        <button *ngIf="tracking.startedAt" ion-button icon-only round (click)="stopButtonClicked()">
+        <button *ngIf="tracking" ion-button icon-only round (click)="stopButtonClicked()">
             <ion-icon name="square"></ion-icon>
         </button>
     </ion-buttons>
 
-    <ion-title *ngIf="tracking.startedAt">
+    <ion-title *ngIf="tracking">
         <ion-grid >
             <ion-row>
                 <ion-col><strong>Inicio:</strong>&nbsp;{{showStartedAt()}}</ion-col>
