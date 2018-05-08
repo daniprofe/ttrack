@@ -7,6 +7,11 @@ import { Task } from '../models/task';
 
 import moment from 'moment';
 
+export interface PdbDoc {
+    _id: string,
+    _rev: string
+}
+
 @Injectable()
 export class PdbProvider {
 
@@ -42,6 +47,24 @@ export class PdbProvider {
         return result + moment().format('YYYYMMDDHHmmss');
     }
 
+    deleteDoc(doc: PdbDoc): Promise<boolean> {
+
+        return new Promise((resolve, reject) => {
+            this.pdb.local.remove(doc).then(result => {
+                if (typeof result.ok === 'boolean' && result.ok === true) {
+                    resolve(true);
+                } else {
+                    console.error('Failed trying to delete on PouchDB this doc: ' + JSON.stringify(doc));
+                    reject(false);
+                }
+            }).catch(errorInfo => {
+                console.error('Failed trying to delete on PouchDB this doc: ' + JSON.stringify(doc));
+                reject(false);
+            });
+
+        });
+    }
+
     fetchAllTrackerIntervals(): Promise<Array<TrackerInterval>> {
 
         return new Promise((resolve, reject) => {
@@ -56,35 +79,35 @@ export class PdbProvider {
                     reject([]);
                 }
 
-                let momentTrackerInterval: TrackerInterval;
-                let trackerIntervalArray: Array<TrackerInterval> = [];
+                let actualTrackerInterval: TrackerInterval;
+                let loadedIntervals: Array<TrackerInterval> = [];
 
-                for (let actualTrackerInterval of result.rows) {
+                for (let dbTrackerInterval of result.rows) {
 
-                    if (typeof actualTrackerInterval.doc !== 'undefined') {
+                    if (typeof dbTrackerInterval.doc !== 'undefined') {
 
-                        momentTrackerInterval = new TrackerInterval(
-                            moment(actualTrackerInterval.doc.startedAt, moment.ISO_8601),
-                            actualTrackerInterval.doc._id
+                        actualTrackerInterval = new TrackerInterval(
+                            moment(dbTrackerInterval.doc.startedAt, moment.ISO_8601),
+                            dbTrackerInterval.doc._id
                         );
 
-                        momentTrackerInterval._rev = actualTrackerInterval.doc._rev;
+                        actualTrackerInterval._rev = dbTrackerInterval.doc._rev;
 
-                        if (actualTrackerInterval.doc.finishedAt) {
-                            momentTrackerInterval.finishedAt = moment(actualTrackerInterval.doc.finishedAt, moment.ISO_8601);
+                        if (dbTrackerInterval.doc.finishedAt) {
+                            actualTrackerInterval.finishedAt = moment(dbTrackerInterval.doc.finishedAt, moment.ISO_8601);
                         }
 
-                        if (actualTrackerInterval.doc.duration) {
-                            momentTrackerInterval.duration = moment.duration(actualTrackerInterval.doc.duration);
+                        if (dbTrackerInterval.doc.duration) {
+                            actualTrackerInterval.duration = moment.duration(dbTrackerInterval.doc.duration);
                         }
 
-                        trackerIntervalArray.push(momentTrackerInterval);
+                        loadedIntervals.push(actualTrackerInterval);
 
                     }
 
                 }
 
-                resolve(trackerIntervalArray);
+                resolve(loadedIntervals);
 
             }).catch(errorInfo => {
                 console.error('Failed trying to load tracker intervals from PouchDB');
@@ -118,6 +141,7 @@ export class PdbProvider {
                     if (typeof actualDbTask.doc !== 'undefined') {
 
                         actualTask = new Task(actualDbTask.doc._id, actualDbTask.doc.description);
+                        actualTask._rev = actualDbTask.doc._rev;
 
                         for (let actualDbInterval of actualDbTask.doc.intervals) {
 
@@ -129,7 +153,7 @@ export class PdbProvider {
                             actualInterval.finishedAt = moment(actualDbInterval.finishedAt, moment.ISO_8601);
                             actualInterval.duration = moment.duration(actualDbInterval.duration);
 
-                            actualTask.intervals.push(actualInterval);
+                            actualTask.addInterval(actualInterval);
                         }
 
                         returnTasks.push(actualTask);
@@ -199,7 +223,12 @@ export class PdbProvider {
                 intervals: []
             };
 
+            if (task._rev != '') {
+                pdbDoc._rev = task._rev;
+            }
+
             let momentInterval;
+            let totalDuration: moment.Duration = moment.duration(0);
 
             for (let actualInterval of task.intervals) {
 
@@ -211,7 +240,11 @@ export class PdbProvider {
 
                 pdbDoc.intervals.push(momentInterval);
 
+                totalDuration.add(actualInterval.duration);
+
             }
+
+            pdbDoc.duration = totalDuration.toISOString();
 
             this.pdb.local.put(pdbDoc).then(response => {
 

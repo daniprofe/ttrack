@@ -32,7 +32,7 @@
         <p>Pulsa el botón <ion-icon name="play"></ion-icon> para comenzar el seguimiento<br>
            Pulsa el botón <ion-icon name="square"></ion-icon> para terminarlo</p>
     </ion-item>
-    <button ion-item *ngFor="let actualTrackerInterval of tracker" (click)="trackerTaskClicked(actualTrackerInterval)">
+    <button ion-item *ngFor="let actualTrackerInterval of tracker; index as clickedIntervalIndex" (click)="trackerIntervalClicked(clickedIntervalIndex)">
         <ion-grid>
             <ion-row>
                 <ion-col>{{mu.momentToString(actualTrackerInterval.startedAt)}}</ion-col>
@@ -50,15 +50,17 @@
             Aún no has registrado ninguna tarea
         </ion-item>
         <ng-container *ngFor="let actualTask of tasks">
-            <button ion-item *ngIf="filterByDescription(actualTask)">
+            <button ion-item *ngIf="filterByDescription(actualTask)" (click)="taskClicked(actualTask)">
                 {{ actualTask.description }}
                 <ion-list *ngIf="actualTask.intervals.length > 0">
                     <ion-item *ngFor="let actualInterval of actualTask.intervals">
-                        <ul>
-                            <li><strong>Inicio:</strong> {{mu.momentToString(actualInterval.startedAt)}}</li>
-                            <li><strong>Fin:</strong> {{showFinishedAt(actualInterval)}}</li>
-                            <li><strong>Duración:</strong> {{mu.durationToHours(actualInterval.duration)}}</li>
-                        </ul>
+                        <ion-grid>
+                            <ion-row>
+                                <ion-col>{{mu.momentToString(actualInterval.startedAt)}}</ion-col>
+                                <ion-col>{{showFinishedAt(actualInterval)}}</ion-col>
+                                <ion-col>{{mu.durationToHours(actualInterval.duration)}}</ion-col>
+                            </ion-row>
+                        </ion-grid>
                     </ion-item>
                 </ion-list>
             </button>

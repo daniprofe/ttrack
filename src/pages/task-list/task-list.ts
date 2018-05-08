@@ -18,6 +18,7 @@ export class TaskListPage {
     private savingTrackerInterval: boolean = false;
     private descriptionFilter: string = '';
     private showTaskSave: boolean = false;
+    private selectedTrackerIntervalIndex: number|null = null;
     private selectedTrackerInterval: TrackerInterval|null = null;
 
     private tracker: Array<TrackerInterval> = [];
@@ -35,9 +36,11 @@ export class TaskListPage {
         console.log('ionViewDidLoad TaskListPage');
         this.events.subscribe('tracker:new-interval', newInterval => {
             this.tracker.push(newInterval);
+            console.log(this.tracker);
         });
         this.pdb.fetchAllTrackerIntervals().then(result => {
             this.tracker = result;
+            console.log(this.tracker);
         });
         this.pdb.fetchAllTasks().then(result => {
             this.tasks = result;
@@ -57,13 +60,32 @@ export class TaskListPage {
 
     }
 
-    trackerTaskClicked(clickedInterval: TrackerInterval) {
+    trackerIntervalClicked(clickedIntervalIndex: number) {
 
         // Go to tasks tab and show search bar
-        this.selectedTrackerInterval = clickedInterval;
+        this.selectedTrackerIntervalIndex = clickedIntervalIndex;
+        this.selectedTrackerInterval = this.tracker[clickedIntervalIndex];
         this.tab = 'tasks';
         this.savingTrackerInterval = true;
         this.searchingTask = true;
+    }
+
+    taskClicked(clickedTask: Task) {
+
+        if (this.savingTrackerInterval) {
+
+            clickedTask.addInterval(this.selectedTrackerInterval);
+
+            this.pdb.storeTask(clickedTask).then(task => {
+                this.pdb.deleteDoc(this.selectedTrackerInterval).then(result => {
+                    this.tracker.splice(this.selectedTrackerIntervalIndex, 1);
+                    this.savingTrackerInterval = false;
+                    this.searchingTask = false;
+                });
+            });
+
+        }
+
     }
 
     filterByDescription(task: Task): boolean {
@@ -89,12 +111,16 @@ export class TaskListPage {
     saveNewTaskButtonClicked() {
 
         let newTask = new Task(this.pdb.generateId('task'), this.descriptionFilter.trim());
-        newTask.intervals.push(this.selectedTrackerInterval);
+        newTask.addInterval(this.selectedTrackerInterval);
+
 
         this.pdb.storeTask(newTask).then(task => {
             this.tasks.push(task);
-            this.savingTrackerInterval = false;
-            this.searchingTask = false;
+            this.pdb.deleteDoc(this.selectedTrackerInterval).then(result => {
+                this.tracker.splice(this.selectedTrackerIntervalIndex, 1);
+                this.savingTrackerInterval = false;
+                this.searchingTask = false;
+            });
         });
     }
 
