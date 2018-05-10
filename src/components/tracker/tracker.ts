@@ -31,6 +31,10 @@ export class TrackerComponent {
         this.timer = Observable.timer(0, 1000);
         this.timer.subscribe(t => { this.updateTimer(t); });
 
+        this.events.subscribe('tracker:load-interval', interval => {
+            this.tracking = interval;
+        });
+
     }
 
     updateTimer(t) {

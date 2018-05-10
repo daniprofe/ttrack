@@ -50,7 +50,7 @@
             Aún no has registrado ninguna tarea
         </ion-item>
         <ng-container *ngFor="let actualTask of tasks">
-            <button ion-item *ngIf="filterByDescription(actualTask)" (click)="taskClicked(actualTask)">
+            <button ion-item *ngIf="!searchingTask || filterByDescription(actualTask)" (click)="taskClicked(actualTask)">
                 {{ actualTask.description }}
                 <ion-list *ngIf="actualTask.intervals.length > 0">
                     <ion-item *ngFor="let actualInterval of actualTask.intervals">
