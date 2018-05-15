@@ -4,4 +4,7 @@ import PouchDB from 'pouchdb';
 
 @Injectable()
 export class UserProvider {
+
+    public loggedIn: boolean = false;
+
 }

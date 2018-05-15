@@ -1,0 +1,55 @@
+<ion-card>
+
+    <ion-card-header>
+        <ion-title>
+            ¿Tienes una cuenta de usuario en TTracker?
+        </ion-title>
+    </ion-card-header>
+
+    <ion-card-content>
+
+        <ion-segment [(ngModel)]="mode" (ionChange)="modeSwitch()">
+            <ion-segment-button value="login">
+                Ya tengo cuenta
+            </ion-segment-button>
+            <ion-segment-button value="register">
+                No tengo cuenta
+            </ion-segment-button>
+        </ion-segment>
+
+        <form no-lines [formGroup]="loginForm">
+
+            <ion-item>
+                <ion-label floating>E-Mail</ion-label>
+                <ion-input formControlName="email" type="text" [class.not-valid-input]="!neverSubmitted && !loginForm.controls.email.valid"></ion-input>
+            </ion-item>
+            <div *ngIf="!neverSubmitted && loginForm.controls.email.errors?.required" padding class="validation-error-message">Necesitamos que escribas aquí tu dirección de E-Mail</div>
+            <div *ngIf="!neverSubmitted && !loginForm.controls.email.errors?.required && loginForm.controls.email.errors?.email" padding class="validation-error-message">Vaya, no parece que eso sea una dirección de E-Mail válida</div>
+
+            <ion-item>
+                <ion-label floating>Contraseña</ion-label>
+                <ion-input formControlName="password" type="text"></ion-input>
+            </ion-item>
+            <div *ngIf="!neverSubmitted && loginForm.controls.password.errors?.required" padding class="validation-error-message">
+                <span *ngIf="mode == 'login'; else emptyPasswordTryingToRegister">
+                    Tienes que escribir tu contraseña
+                </span>
+                <ng-template #emptyPasswordTryingToRegister>
+                    Elige con cuidado tu contraseña y escríbela aquí
+                </ng-template>
+            </div>
+
+            <ion-item *ngIf="mode == 'register'">
+                <ion-label floating>Escribe de nuevo la contraseña</ion-label>
+                <ion-input formControlName="repeatPassword" type="text"></ion-input>
+            </ion-item>
+            <div *ngIf="mode == 'register' && !neverSubmitted && loginForm.controls.repeatPassword.errors?.required" padding class="validation-error-message">Por seguridad escribe aquí otra vez tu contraseña</div>
+            <div *ngIf="mode == 'register' && !neverSubmitted && loginForm.controls.repeatPassword.errors?.noMatch" padding class="validation-error-message">Las contraseñas no coinciden</div>
+
+        </form>
+
+        <button ion-button (click)="actionButtonClicked()">Identificarme</button>
+
+    </ion-card-content>
+
+</ion-card>

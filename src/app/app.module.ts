@@ -6,6 +6,7 @@ import { ComponentsModule } from '../components/components.module';
 
 import { TTracker } from './app.component';
 
+import { LoginPage } from '../pages/login/login';
 import { TaskListPage } from '../pages/task-list/task-list';
 
 import { MomentUtilsProvider } from '../providers/moment-utils';
@@ -15,6 +16,7 @@ import { UserProvider } from '../providers/user';
 @NgModule({
     declarations: [
         TTracker,
+        LoginPage,
         TaskListPage
     ],
     imports: [
@@ -29,6 +31,8 @@ import { UserProvider } from '../providers/user';
     ],
     entryComponents: [
         TTracker,
+
+        LoginPage,
         TaskListPage
     ],
     providers: [
@@ -36,9 +40,9 @@ import { UserProvider } from '../providers/user';
             provide: ErrorHandler,
             useClass: IonicErrorHandler
         },
-    MomentUtilsProvider,
-    PdbProvider,
-    UserProvider
+        MomentUtilsProvider,
+        PdbProvider,
+        UserProvider
     ]
 })
 export class AppModule {}

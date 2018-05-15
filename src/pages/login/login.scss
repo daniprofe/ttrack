@@ -1,0 +1,12 @@
+page-login {
+
+    .not-valid-input {
+        border-bottom: 2px solid color($colors, 'danger');
+    }
+
+    .validation-error-message {
+        color: color($colors, 'danger');
+        font-weight: bold;
+    }
+
+}

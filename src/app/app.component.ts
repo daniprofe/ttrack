@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { TrackerInterval } from '../models/tracker-interval';
-import { Events } from 'ionic-angular';
+import { Events, Nav } from 'ionic-angular';
 
 import { TaskListPage } from '../pages/task-list/task-list';
-// import { Task } from '../models/task';
-// import { PdbProvider } from '../providers/pdb';
+import { LoginPage } from '../pages/login/login';
+
+import { UserProvider } from '../providers/user';
 
 @Component({
   templateUrl: 'app.html'
@@ -12,14 +13,16 @@ import { TaskListPage } from '../pages/task-list/task-list';
 
 export class TTracker {
 
+    @ViewChild(Nav) nav: Nav;
+
     rootPage: any = TaskListPage;
 
-    constructor() {
+    constructor(
+        private user: UserProvider) {
     }
 
-    newTrackerInterval(trackerInterval) {
-
-
-
+    goToLoginPage() {
+        this.nav.push(LoginPage);
+        // this.rootPage = LoginPage;
     }
 }
