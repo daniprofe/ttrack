@@ -3,6 +3,8 @@ import { FormBuilder, FormControl, FormGroup, Validators, ValidationErrors } fro
 
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
 
+import { UserProvider } from '../../providers/user'
+
 @IonicPage()
 @Component({
     selector: 'page-login',
@@ -18,7 +20,8 @@ export class LoginPage {
     constructor(
         public navCtrl: NavController,
         public navParams: NavParams,
-        public formBuilder: FormBuilder) {
+        public formBuilder: FormBuilder,
+        private up: UserProvider) {
 
         this.loginForm = this.formBuilder.group({
             email: ['', Validators.compose([Validators.required, Validators.email])],
@@ -75,8 +78,16 @@ export class LoginPage {
         this.neverSubmitted = false;
 
         if (this.loginForm.valid) {
+
             console.log("Form is OK!")
-            // console.log(this.loginForm.value);
+            console.log(this.loginForm.value);
+
+            if (this.mode == 'register') {
+                this.up.registerNewUser(this.loginForm.value.email, this.loginForm.value.password).subscribe();
+            } else {
+                this.up.login(this.loginForm.value.email, this.loginForm.value.password).subscribe();
+            }
+
         } else {
             console.error("Form is not valid!")
         }
