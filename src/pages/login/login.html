@@ -46,9 +46,15 @@
             <div *ngIf="mode == 'register' && !neverSubmitted && loginForm.controls.repeatPassword.errors?.required" padding class="validation-error-message">Por seguridad escribe aquí otra vez tu contraseña</div>
             <div *ngIf="mode == 'register' && !neverSubmitted && loginForm.controls.repeatPassword.errors?.noMatch" padding class="validation-error-message">Las contraseñas no coinciden</div>
 
-        </form>
+            <ion-card color="danger" *ngIf="loginFailed">
+                <ion-card-content>
+                <strong>Fallo en la identificación. Revise con cuidado su E-Mail y contraseña y vuelva a intentarlo</strong>
+                </ion-card-content>
+            </ion-card>
 
-        <button ion-button (click)="actionButtonClicked()">Identificarme</button>
+            <button margin-top ion-button (click)="actionButtonClicked()">Identificarme</button>
+
+        </form>
 
     </ion-card-content>
 

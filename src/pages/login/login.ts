@@ -17,6 +17,8 @@ export class LoginPage {
     private loginForm: FormGroup;
     private repeatPassword: FormControl;
 
+    private loginFailed: boolean = false;
+
     constructor(
         public navCtrl: NavController,
         public navParams: NavParams,
@@ -85,7 +87,12 @@ export class LoginPage {
             if (this.mode == 'register') {
                 this.up.registerNewUser(this.loginForm.value.email, this.loginForm.value.password).subscribe();
             } else {
-                this.up.login(this.loginForm.value.email, this.loginForm.value.password).subscribe();
+                this.loginFailed = false;
+                this.up.login(this.loginForm.value.email, this.loginForm.value.password).subscribe(ll => {},
+                    error => {
+                        this.loginFailed = true;
+                    }
+                );
             }
 
         } else {

@@ -24,3 +24,8 @@ http://blog.mattwoodward.com/2012/03/definitive-guide-to-couchdb.html
 
 Superlogin demo
 https://github.com/colinskow/superlogin-demo
+
+---------------
+
+https://cwiki.apache.org/confluence/display/COUCHDB/Apache+as+a+proxy
+https://ionicframework.com/docs/cli/configuring.html#service-proxies

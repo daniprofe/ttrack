@@ -40,10 +40,11 @@ export class TaskListPage {
         });
         this.pdb.fetchAllTrackerIntervals().then(result => {
 
+
             /* If last interval of array has not finished yet...
              * start tracking it!
              */
-            if (typeof result[result.length-1].finishedAt === 'undefined') {
+            if (result.length > 0 && typeof result[result.length-1].finishedAt === 'undefined') {
                 this.events.publish('tracker:load-interval', result.pop());
             }
 

@@ -9,9 +9,10 @@ import { _throw } from 'rxjs/observable/throw'
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 
-
+import { PdbProvider } from './pdb';
 
 import PouchDB from 'pouchdb';
+import moment from 'moment';
 
 /*
 {
@@ -44,7 +45,7 @@ interface superLoginAuthInt {
 @Injectable()
 export class UserProvider {
 
-    private baseUrl = 'https://ttrack-couchdb-server-daniprofe.c9users.io/auth/';
+    private baseUrl = 'https://ttrack-couchdb-server-daniprofe.c9users.io:8081/auth/';
 
     /**
      * Default HttpClient request options (to be used on every request)
@@ -52,13 +53,70 @@ export class UserProvider {
     private defaultRequestOptions = {};
 
     public loggedIn: boolean = false;
-    public email: string|null = null;
+
+    private loggedUser: any = {
+        '_id': '_local/loggedUser'
+    };
 
     private superLoginAuth;
 
     constructor(
         private events: Events,
-        private http: HttpClient) {
+        private http: HttpClient,
+        private pdb: PdbProvider) {
+
+        this.loadLocalUserInfo();
+    }
+
+    private loadLocalUserInfo() {
+        this.pdb.pdb.local.get(this.loggedUser._id).then((data) => {
+            this.loggedUser = data;
+            if (typeof this.loggedUser.superLoginAuth !== 'undefined') {
+                console.log('---- User logged in ----');
+                console.log('Issued: ' + moment(this.loggedUser.superLoginAuth.issued).format('DD/MM/YYYY HH:mm:ss'));
+                console.log('Expires: ' + moment(this.loggedUser.superLoginAuth.expires).format('DD/MM/YYYY HH:mm:ss'));
+                this.loggedIn = true;
+                this.events.publish('auth:login', {});
+                this.startRemoteSync();
+            }
+        }).catch((error) => {
+            if (typeof error !== 'undefined' && typeof error.status === 'number' && error.status === 404) {
+                this.pdb.pdb.local.put(this.loggedUser);
+            }
+        });
+    }
+
+    private startRemoteSync() {
+
+        if (typeof this.loggedUser.superLoginAuth !== 'undefined' &&
+            typeof this.loggedUser.superLoginAuth.userDBs !== 'undefined' &&
+            typeof this.loggedUser.superLoginAuth.userDBs.ttrack === 'string') {
+
+            /* Start local <-> remote live sync
+             * @see https://pouchdb.com/guides/replication.html
+             */
+
+            this.pdb.pdb.remote = new PouchDB(this.loggedUser.superLoginAuth.userDBs.ttrack);
+
+            this.pdb.pdb.local.sync(this.pdb.pdb.remote, {
+              live: true,
+              retry: true
+            }).on('change', function (change) {
+              console.log('SYNC - change:');
+              console.log(change);
+            }).on('paused', function (info) {
+                console.log('SYNC - paused:');
+                console.log(info);
+            }).on('active', function (info) {
+                console.log('SYNC - active:');
+                console.log(info);
+            }).on('error', function (err) {
+                console.log('SYNC - err:');
+                console.log(err);
+            });
+
+        }
+
     }
 
     private handleError(error: HttpErrorResponse) {
@@ -145,9 +203,11 @@ export class UserProvider {
         return this.http.post(this.baseUrl + 'login', dataToSend, requestOptions).pipe(
             tap(data => {
                 if (data && typeof data['token'] == 'string') {
-                    this.superLoginAuth = data;
+                    this.loggedUser['superLoginAuth'] = data;
+                    this.pdb.pdb.local.put(this.loggedUser);
                     console.log(this.superLoginAuth);
                     this.loggedIn = true;
+                    this.startRemoteSync();
                     this.events.publish('auth:login', {});
                 }
             }, error => {
