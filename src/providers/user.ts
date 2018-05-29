@@ -80,9 +80,12 @@ export class UserProvider {
                 this.startRemoteSync();
             }
         }).catch((error) => {
+            console.error('Error loading loggedUser from PouchDB!!');
+            /*
             if (typeof error !== 'undefined' && typeof error.status === 'number' && error.status === 404) {
                 this.pdb.pdb.local.put(this.loggedUser);
             }
+            */
         });
     }
 
